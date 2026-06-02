@@ -31,44 +31,81 @@ public class App {
     }    
 
 public static void main(String[] args) {
-        int cantidadMuestras = 10;
         SortPersonaMethods sorting = new SortPersonaMethods();
+        int[] tamaños = {10000, 50000, 100000};
+        
         long inicio, fin;
-        double duracion;
+        double tInsertion, tQuick;
 
-        Persona[] arregloOriginal = generarPersonas(cantidadMuestras);
-        
-        System.out.println("--- Arreglo Original (Desordenado) ---");
-        imprimirArreglo(arregloOriginal);
+        // =========================================================================
+        // TABLA 1: ESCENARIO 1 (COMPLETAMENTE DESORDENADO)
+        // =========================================================================
+        System.out.println("Escenario 1: arreglo completamente desordenado\n");
+        System.out.println("| Tamaño de muestra | Tiempo Inserción | Tiempo QuickSort | Algoritmo más rápido | Observación |");
+        System.out.println("|---|---|---|---|---|");
 
-        
-        Persona[] copiaInsertion = arregloOriginal.clone(); // clonar
-        
-        inicio = System.nanoTime();          
-        sorting.insertionSort(copiaInsertion); 
-        fin = System.nanoTime();             
-        
-        duracion = fin - inicio;
-        Resultado resultadoInsertion = new Resultado("InsertionSort","Ordenado", cantidadMuestras, duracion);
-        
-        System.out.println("--- Arreglo Ordenado (InsertionSort) ---");
-        imprimirArreglo(copiaInsertion);
-        imprimirResultado(resultadoInsertion);
+        for (int n : tamaños) {
+            Persona[] original = generarPersonas(n);
+
+            
+            Persona[] copiaInsertion = original.clone();
+            inicio = System.nanoTime();
+            sorting.insertionSort(copiaInsertion);
+            fin = System.nanoTime();
+            tInsertion = (fin - inicio) / 1_000_000.0; 
+            
+            
+            Persona[] copiaQuick = original.clone();
+            inicio = System.nanoTime();
+            sorting.quickSort(copiaQuick, 0, copiaQuick.length - 1);
+            fin = System.nanoTime();
+            tQuick = (fin - inicio) / 1_000_000.0; // 
+
+            String masRapido = (tInsertion < tQuick) ? "InsertionSort" : "QuickSort";
+            
+            System.out.printf("| %,d | %.2f ms | %.2f ms | %s | |\n", n, tInsertion, tQuick, masRapido);
+        }
+
+        System.out.println("\n");
+
+        System.out.println(" Escenario 2: arreglo ordenado más una nueva persona\n");
+        System.out.println("| Tamaño de muestra | Tiempo Inserción | Tiempo QuickSort | Algoritmo más rápido | Observación |");
+        System.out.println("|---|---|---|---|---|");
+
+        for (int n : tamaños) {
+            Persona[] baseOrdenada = generarPersonas(n);
+            sorting.quickSort(baseOrdenada, 0, baseOrdenada.length - 1);
 
 
-   
-        Persona[] copiaQuick = arregloOriginal.clone();
-        
-        inicio = System.nanoTime();          
-        sorting.quickSort(copiaQuick, 0, copiaQuick.length - 1); 
-        fin = System.nanoTime();             
-        
-        duracion = fin - inicio;
-        Resultado resultadoQuick = new Resultado("QuickSort", "Completamente Desordenado", cantidadMuestras, duracion);
-        
-        System.out.println("--- Arreglo Ordenado (QuickSort) ---");
-        imprimirArreglo(copiaQuick);
-        imprimirResultado(resultadoQuick);
+            Persona[] escenario2 = new Persona[n + 1];
+            System.arraycopy(baseOrdenada, 0, escenario2, 0, n);
+
+            escenario2[n] = new Persona("Nueva Persona", (int) (Math.random() * 101));
+
+            int tamañoTotal = escenario2.length;
+
+
+            Persona[] copiaInsertion = new Persona[tamañoTotal];
+            System.arraycopy(escenario2, 0, copiaInsertion, 0, tamañoTotal);
+            
+            inicio = System.nanoTime();
+            sorting.insertionSort(copiaInsertion);
+            fin = System.nanoTime();
+            tInsertion = (fin - inicio) / 1_000_000.0;
+
+            
+            Persona[] copiaQuick = new Persona[tamañoTotal];
+            System.arraycopy(escenario2, 0, copiaQuick, 0, tamañoTotal);
+            
+            inicio = System.nanoTime();
+            sorting.quickSort(copiaQuick, 0, copiaQuick.length - 1);
+            fin = System.nanoTime();
+            tQuick = (fin - inicio) / 1_000_000.0;
+
+            String masRapido = (tInsertion < tQuick) ? "InsertionSort" : "QuickSort";
+
+            System.out.printf("| %,d | %.2f ms | %.2f ms | %s | |\n", tamañoTotal, tInsertion, tQuick, masRapido);
+        }
     }
 }
 
